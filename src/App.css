@@ -1,0 +1,183 @@
+:root {
+  --base-neutra-1: #F8F5F1;
+  --base-neutra-2: #F1DFE1;
+  --base-neutra-3: #EDE0D4;
+
+  --nuevo-color-1: #B4B4B4;
+  --nuevo-color-2: #D1C6B1;
+  --nuevo-color-3: #A79F91;
+  --nuevo-color-4: #E1E1E1;
+  --nuevo-color-5: #F2F2F2;
+  --nuevo-color-6: #F4F4F4;
+
+  --tono-tecnologico-1: #7896AB;
+  --tono-tecnologico-2: #214662;
+  --tono-tecnologico-3: #C4E2E2;
+
+  --aceptacion-rojo: #FF0000;
+  --aceptacion-amarillo: #b9830f;
+  --aceptacion-verde: #008000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: var(--base-neutra-1); /* Fondo claro */
+  color: #333; /* Color de texto */
+  height: 100vh; /* Ocupa toda la altura de la ventana */
+  display: flex;
+  flex-direction: column; /* Elementos en columna */
+}
+
+/* Encabezado */
+.App-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 50px;
+  background-color: var(--tono-tecnologico-2); /* Fondo del header */
+  color: var(--base-neutra-1); /* Color blanco para el texto */
+  position: sticky; /* Header fijo en la parte superior */
+  top: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.App-header h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.App-logo {
+  width: 60px; /* Tamaño del logo */
+  margin-right: 20px;
+}
+
+.header-right {
+  display: flex;
+  gap: 20px;
+}
+
+/* Botones */
+.btn {
+  padding: 12px 20px;
+  font-size: 1rem;
+  color: var(--tono-tecnologico-2); /* Texto en tono tecnológico */
+  background-color: var(--tono-tecnologico-3); /* Fondo color C4E2E2 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--base-neutra-3); /* Fondo neutro al pasar el ratón */
+  transform: scale(1.05);
+}
+
+.btnActuali {
+  padding: 12px 20px;
+  font-size: 1rem;
+  color: var(--tono-tecnologico-2); /* Texto en tono tecnológico */
+  background-color: var(--tono-tecnologico-3); /* Fondo color C4E2E2 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btnActuali:hover {
+  background-color: var(--base-neutra-3); /* Fondo neutro al pasar el ratón */
+  transform: scale(1.05);
+}
+
+.btn-color {
+  color: black; /* Texto negro */
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #C4E2E2; /* Fondo color C4E2E2 */
+}
+
+/* Slider */
+.slider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+  padding: 20px;
+}
+
+.slider img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .App-header {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .slider {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .App-header {
+    padding: 15px;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px 0;
+  text-align: center;
+  background-color: var(--base-neutra-1);
+}
+/* App.css */
+
+/* Ajustar el Card para que ocupe un ancho adecuado */
+.custom-card-width {
+  width: 85%; /* Cambiar a un ancho de 85% para un poco menos de espacio */
+  margin: 0 auto; /* Centrar el card en la pantalla */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra sutil para destacar */
+}
+
+/* Ajustar la tabla para que ocupe un ancho adecuado */
+.custom-table-width {
+  width: 100%; /* Asegura que la tabla ocupe todo el ancho disponible dentro del card */
+  table-layout: fixed; /* Fuerza el ajuste automático de columnas */
+  overflow-x: auto; /* Añade desplazamiento horizontal si el contenido es demasiado grande */
+}
+
+/* Remover márgenes adicionales en el contenedor */
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}

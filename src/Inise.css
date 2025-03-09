@@ -1,0 +1,124 @@
+/* Inicio.css */
+
+.Inicio-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+  }
+  
+  .container {
+  display: flex;
+  justify-content: center;  /* Centra el contenido */
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  gap: 5px;  /* Añade un pequeño espacio entre la imagen y el formulario */
+}
+
+  
+  .Inicio-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .Inicio-image img {
+    max-width: 65%;
+    height: auto;
+    border-radius: 10px;
+  }
+  
+  .Inicio-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 450px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .Inicio-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .Inicio-form .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .Inicio-form .form-group label {
+    font-weight: bold;
+    display: block;
+  }
+  
+  .Inicio-form .form-group input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .Inicio-form .form-group input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .Inicio-form .btn-Inicio {
+    width: 100%;
+  color: black; /* Cambia el color del texto a negro */
+    padding: 10px;
+    background-color: #C4E2E2!important;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .Inicio-form .btn-InicioGoogle {
+    width: 100%;
+    padding: 10px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .Inicio-form .btn-Inicio:hover {
+    background-color: #0056b3;
+  }
+  
+  .error {
+    color: red;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .espaciado {
+    margin-top: 20px; /* Espacio arriba */
+    margin-bottom: 20px; /* Espacio abajo */
+}
+.btn-home {
+  background-color: #214662 !important;;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espacio entre el icono y el texto */
+  cursor: pointer;
+}
+
+.btn-home i {
+  font-size: 18px;
+}

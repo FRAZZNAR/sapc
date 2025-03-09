@@ -1,0 +1,125 @@
+/* Registro.css */
+
+.registro-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+  }
+  
+  .container {
+  display: flex;
+  justify-content: center;  /* Centra el contenido */
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  gap: 5px;  /* Añade un pequeño espacio entre la imagen y el formulario */
+}
+
+  
+  .registro-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .registro-image img {
+    max-width: 65%;
+    height: auto;
+    border-radius: 10px;
+  }
+  
+  .registro-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 450px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .registro-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .registro-form .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .registro-form .form-group label {
+    font-weight: bold;
+    display: block;
+  }
+  
+  .registro-form .form-group input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .registro-form .form-group input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .registro-form .btn-registrar {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .registro-form .btn-registrar:hover {
+    background-color: #0056b3;
+  }
+  
+  .error {
+    color: red;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .espaciado {
+    margin-top: 20px; /* Espacio arriba */
+    margin-bottom: 20px; /* Espacio abajo */
+}
+.btn-home {
+  background-color: #214662 !important;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espacio entre el icono y el texto */
+  cursor: pointer;
+}
+
+.btn-home i {
+  font-size: 18px;
+}
+.btn-color {
+  color: black; /* Cambia el color del texto a negro */
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centra el texto horizontalmente */
+  background-color: #C4E2E2!important;
+}
