@@ -20,13 +20,12 @@ const Registro = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Limpiar mensaje de error cuando el usuario comienza a escribir
     if (error) setError("");
   };
 
   const validarFormulario = () => {
     const { nombre, correo, contraseña, confirmarContraseña, telefono } = formData;
-
+  
     if (!nombre || !correo || !contraseña || !confirmarContraseña || !telefono) {
       setError("Todos los campos son obligatorios.");
       return false;
@@ -36,28 +35,33 @@ const Registro = () => {
       setError("Las contraseñas no coinciden.");
       return false;
     }
-
+  
     if (contraseña.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
       return false;
     }
-
-    // Validación básica de formato de email
+  
+    const specialCharRegex = /[!@#$%^&*()_+[\]{}|;:'",.<>?/]/;
+    if (!specialCharRegex.test(contraseña)) {
+      setError("La contraseña debe contener al menos un signo especial (!@#$%^&*...).");
+      return false;
+    }
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(correo)) {
       setError("Ingresa un correo electrónico válido.");
       return false;
     }
-
-    // Validación de teléfono (formato mexicano 10 dígitos)
+  
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(telefono)) {
       setError("Ingresa un número de teléfono válido (10 dígitos).");
       return false;
     }
-
+  
     return true;
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,7 +75,6 @@ const Registro = () => {
     try {
       const { nombre, correo, contraseña, telefono } = formData;
       
-      // Enviar solicitud de registro
       const response = await axios.post(`${API_URL}/usuarios/registro`, {
         nombre,
         correo,
@@ -79,7 +82,6 @@ const Registro = () => {
         telefono
       });
       
-      // Guardar token en localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
       
