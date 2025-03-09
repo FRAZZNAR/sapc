@@ -14,18 +14,18 @@ import {
 import logo from "./Img/LOGO.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
+import HeaderComponent from './HeaderComponent.js';
+
 
 const Header = ({ userType, userName }) => {
   return (
     <nav className="navbar navbar-expand-lg px-3" style={{ backgroundColor: "#214662" }}>
       <div className="container-fluid d-flex justify-content-between align-items-center">
-        {/* Logo y título */}
         <div className="d-flex align-items-center">
           <img src={logo} className="me-2" alt="logo" width="50" />
           <h2 className="text-light m-0">Sistema de Análisis de Percepción Ciudadana</h2>
         </div>
 
-        {/* Botones de sesión */}
         <div>
           {userType === null ? (
             <>
@@ -39,9 +39,9 @@ const Header = ({ userType, userName }) => {
           ) : userType === 2 ? (
             <div className="d-flex align-items-center">
               <FontAwesomeIcon icon={faCircleUser} className="me-2 text-white" size="lg" />
-              <div className="text-white">
-                <p className="mb-0">correo@ejemplo.com</p>
-              </div>
+              <HeaderComponent />
+
+           
               <div className="ms-3">
                 <div className="dropdown">
                   <button

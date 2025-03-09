@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import axios from 'axios';
+import HeaderComponent from './HeaderComponent.js';
 
 const Popularidad = () => {
   const navigate = useNavigate();
@@ -153,14 +154,8 @@ const Popularidad = () => {
       <NavBar userType={1} />
       <div className="main-content">
         <header className="header">
-          <Container>
-            <div className="d-flex justify-content-between align-items-center">
-              <p className="mb-0 ms-3">correo@ejemplo.com</p>
-              <Button variant="danger" aria-label="Cerrar sesión" onClick={cerrarSesion}>
-                <i className="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
-              </Button>
-            </div>
-          </Container>
+        <HeaderComponent />
+
         </header>
 
         <div className="container mt-4">

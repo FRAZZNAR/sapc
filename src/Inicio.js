@@ -32,7 +32,6 @@ const Inicio = () => {
     }
 
     try {
-      // Hacemos la solicitud al backend para autenticar al usuario
       const response = await axios.post(`${API_URL}/usuarios/login`, {
         correo,
         contraseña,

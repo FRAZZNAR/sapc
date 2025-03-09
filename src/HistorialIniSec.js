@@ -7,6 +7,7 @@ import NavBar from './NavBar';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf'; 
+import HeaderComponent from './HeaderComponent.js';
 
 const HistorialIniSec = ({ userType = 1 }) => {
   const [showAll, setShowAll] = useState(false);
@@ -118,16 +119,8 @@ const HistorialIniSec = ({ userType = 1 }) => {
       {userType === 1 && (
         <div className="main-content">
           <header className="header">
-            <Container>
-              <div className="d-flex justify-content-between align-items-center">
-                <div className="ms-3">
-                  <p className="mb-0">correo@ejemplo.com</p>
-                </div>
-                <Button variant="danger" className="ms-3" onClick={handleLogout}>
-                  <i className="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
-                </Button>
-              </div>
-            </Container>
+          <HeaderComponent />
+
           </header>
         </div>
       )}
