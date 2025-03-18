@@ -22,7 +22,7 @@ const Popularidad = () => {
     const fetchTweetsAndCountHashtags = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:3000/tweets');
+        const response = await axios.get('https://gateway-41642489028.us-central1.run.app/tweets');
         
         const tweets = response.data.tweets;
         

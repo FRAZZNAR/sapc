@@ -10,7 +10,6 @@ const NavBar = ({ userType }) => {
     <nav className="col-md-3 col-lg-2 d-md-block sidebar">
       <div className="position-sticky">
         <ul className="nav flex-column">
-          {userType === 1 && (
             <>
               <li className="nav-item">
                 <Link className="nav-link active" to="/Panel">
@@ -38,7 +37,6 @@ const NavBar = ({ userType }) => {
                 </Link>
               </li>
             </>
-          )}
         </ul>
       </div>
     </nav>

@@ -9,7 +9,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const Resultados = () => {
-  const pdfRef = useRef(); // Referencia al contenido del PDF
+  const pdfRef = useRef(); 
 
   const options = {
     chart: {

@@ -20,31 +20,49 @@ const HistorialIniSec = ({ userType = 1 }) => {
   const fetchHistorial = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3000/usuarios/historial');
+      const token = localStorage.getItem('token');
+  
+      if (!token) {
+        throw new Error('No se encontró el token en el localStorage');
+      }
+  
+      const response = await axios.get(
+        'https://api-users-41642489028.us-central1.run.app/historial',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
   
       console.log('Respuesta del servidor:', response.data);
-      
+  
       const historialFormateado = response.data.historial.map(item => {
         if (!item.fechaStr || !item.horaStr) {
           const fecha = new Date(item.fecha);
           return {
             ...item,
             fechaStr: item.fechaStr || fecha.toLocaleDateString(),
-            horaStr: item.horaStr || fecha.toLocaleTimeString()
+            horaStr: item.horaStr || fecha.toLocaleTimeString(),
           };
         }
         return item;
       });
-      
+  
       setHistorial(historialFormateado);
       setLoading(false);
     } catch (error) {
       console.error('Error al cargar el historial:', error);
       setError('Error al cargar el historial. ' + (error.response?.data?.mensaje || error.message));
       setLoading(false);
+  
+      // Si el token es inválido o ha expirado, redirige al inicio de sesión
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/');
+      }
     }
   };
-
   useEffect(() => {
     fetchHistorial();
   }, []);

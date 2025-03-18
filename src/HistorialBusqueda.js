@@ -57,7 +57,6 @@ const HistorialBusqueda = () => {
         </button>
       </div>
 
-      {/* Contenedor para capturar en PDF */}
       <Container className="mt-4" ref={pdfRef}>
         <Table bordered hover className="table-striped">
           <thead>

@@ -13,11 +13,11 @@ const HeaderComponent = () => {
     }
   }, []);
 
-  // Función para cerrar sesión
   const handleLogout = () => {
-    localStorage.removeItem("usuario"); // Elimina datos del usuario
-    localStorage.removeItem("token");   // Elimina el token
-    window.location.href = "/";         // Redirige a la página de inicio
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("token");  
+    localStorage.removeItem("type"); 
+    window.location.href = "/";       
   };
 
   return (

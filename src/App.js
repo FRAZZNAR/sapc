@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Container, Table, Card, Row, Col, Form, Badge, Button, Modal } from "react-bootstrap";
+import { Container, Table, Card, Row, Col, Form, Badge, Button, Modal, Alert } from "react-bootstrap";
 import axios from "axios";
 import "./App.css";
 import Header from "./Header";
@@ -15,20 +15,73 @@ function App() {
   const [stats, setStats] = useState({});
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  
+  // Estado para verificar si el usuario está logeado
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Estado para el nombre de usuario
+  const [userName, setUserName] = useState("Usuario");
 
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
   useEffect(() => {
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        setIsLoggedIn(true);
+        
+        try {
+          const userInfo = JSON.parse(localStorage.getItem('usuario'));
+          if (userInfo && userInfo.nombre) {
+            setUserName(userInfo.nombre);
+          } else if (userInfo && userInfo.correo) {
+            setUserName(userInfo.correo.split('@')[0]);
+          }
+        } catch (error) {
+          console.error("Error al parsear información del usuario:", error);
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLoginStatus();
+
+    const handleStorageChange = () => {
+      checkLoginStatus();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
     const fetchTweets = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:3000/tweets?page=${paginaActual}&limit=${temasPorPagina}`);
+        
+        const currentPage = !isLoggedIn ? 1 : paginaActual;
+        
+        const response = await axios.get(`https://gateway-41642489028.us-central1.run.app/tweets?page=${currentPage}&limit=${temasPorPagina}`);
 
         setTweets(response.data.tweets);
         setTotalPaginas(response.data.totalPages);
 
-        const statsResponse = await axios.get('http://localhost:3000/tweets/stats/sentiment');
+        // const statsResponse = await axios.get('http://localhost:3000/tweets/tweets/stats/sentiment');
+        const statsResponse = await axios.get('https://gateway-41642489028.us-central1.run.app/tweets/stats/sentiment');
 
         const totalTweets = statsResponse.data.reduce((sum, item) => sum + item.count, 0);
         const statsObj = {};
@@ -45,7 +98,15 @@ function App() {
     };
 
     fetchTweets();
-  }, [paginaActual, temasPorPagina]);
+  }, [paginaActual, temasPorPagina, isLoggedIn]);
+
+  const handlePageChange = (newPage) => {
+    if (!isLoggedIn && newPage > 1) {
+      return;
+    }
+    
+    setPaginaActual(newPage);
+  };
 
   const handleSearch = (e) => {
     setBusqueda(e.target.value);
@@ -68,7 +129,7 @@ function App() {
 
   return (
     <div className="App">
-      <Header userType={2} />
+      <Header userType={isLoggedIn ? 2 : null} userName={userName} />
       <main>
         <Container fluid className="mt-4 px-0">
           <Card className="card text-center custom-card-width">
@@ -116,6 +177,13 @@ function App() {
               </div>
             </Card.Header>
             <Card.Body>
+              {!isLoggedIn && (
+                <Alert variant="info" className="my-2">
+                  <i className="fa-solid fa-lock me-2"></i>
+                  Inicia sesión para ver más páginas de tweets y acceder a todas las funcionalidades.
+                </Alert>
+              )}
+              
               {loading ? (
                 <div className="text-center py-4">
                   <div className="spinner-border" role="status">
@@ -146,7 +214,6 @@ function App() {
                           </td>
                           <td className="text-start">
                             <Link
-                              to={`/tweet/${tweet._id}`}
                               className="text-decoration-none text-dark"
                             >
                               {tweet.Tweet}
@@ -174,24 +241,39 @@ function App() {
               <Row className="d-flex justify-content-center align-items-center">
                 <Col xs="auto">
                   <i
-                    className="fa-regular fa-circle-left"
-                    onClick={() => setPaginaActual(paginaActual > 1 ? paginaActual - 1 : paginaActual)}
-                    style={{ cursor: "pointer", fontSize: "24px", color: "#214662" }}
+                    className={`fa-regular fa-circle-left ${(!isLoggedIn || paginaActual <= 1) ? 'text-muted' : ''}`}
+                    onClick={() => handlePageChange(paginaActual > 1 ? paginaActual - 1 : paginaActual)}
+                    style={{ 
+                      cursor: (isLoggedIn && paginaActual > 1) ? "pointer" : "not-allowed", 
+                      fontSize: "24px", 
+                      color: (isLoggedIn && paginaActual > 1) ? "#214662" : "#aaa" 
+                    }}
                   ></i>
                 </Col>
                 <Col xs="auto">
                   <span className="text-muted">
-                    Página {paginaActual} de {totalPaginas || 1}
+                    Página {paginaActual} de {isLoggedIn ? (totalPaginas || 1) : 1}
                   </span>
                 </Col>
                 <Col xs="auto">
                   <i
-                    className="fa-regular fa-circle-right"
-                    onClick={() => setPaginaActual(paginaActual < totalPaginas ? paginaActual + 1 : paginaActual)}
-                    style={{ cursor: "pointer", fontSize: "24px", color: "#214662" }}
+                    className={`fa-regular fa-circle-right ${(!isLoggedIn || paginaActual >= totalPaginas) ? 'text-muted' : ''}`}
+                    onClick={() => handlePageChange(paginaActual < totalPaginas ? paginaActual + 1 : paginaActual)}
+                    style={{ 
+                      cursor: (isLoggedIn && paginaActual < totalPaginas) ? "pointer" : "not-allowed", 
+                      fontSize: "24px", 
+                      color: (isLoggedIn && paginaActual < totalPaginas) ? "#214662" : "#aaa" 
+                    }}
                   ></i>
                 </Col>
               </Row>
+              {!isLoggedIn && (
+                <div className="mt-2">
+                  <Button variant="outline-primary" size="sm" as={Link} to="/Inicio">
+                    Iniciar Sesión
+                  </Button>
+                </div>
+              )}
             </Card.Footer>
           </Card>
         </Container>
