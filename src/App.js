@@ -75,12 +75,15 @@ function App() {
         
         const currentPage = !isLoggedIn ? 1 : paginaActual;
         
-        const response = await axios.get(`https://gateway-41642489028.us-central1.run.app/tweets?page=${currentPage}&limit=${temasPorPagina}`);
-
+        const url = isLoggedIn
+          ? `https://gateway-41642489028.us-central1.run.app/tweets?page=${currentPage}&limit=${temasPorPagina}`
+          : `https://gateway-41642489028.us-central1.run.app/tweets?page=1&limit=${temasPorPagina}`;
+          
+        const response = await axios.get(url);
         setTweets(response.data.tweets);
-        setTotalPaginas(response.data.totalPages);
+        setTotalPaginas(response.data.totalPages || 1);
 
-        // const statsResponse = await axios.get('http://localhost:3000/tweets/tweets/stats/sentiment');
+        // Obtiene estadísticas de sentimientos
         const statsResponse = await axios.get('https://gateway-41642489028.us-central1.run.app/tweets/stats/sentiment');
 
         const totalTweets = statsResponse.data.reduce((sum, item) => sum + item.count, 0);
@@ -112,16 +115,20 @@ function App() {
     setBusqueda(e.target.value);
     setPaginaActual(1);
   };
-
   const getSentimentColor = (sentiment) => {
-    switch (sentiment) {
-      case 'Positivo': return 'success';
-      case 'Negativo': return 'danger';
-      case 'Neutral': return 'warning';
-      default: return 'info';
+    const sentimentLowerCase = sentiment.toLowerCase();
+    
+    switch (sentimentLowerCase) {
+      case 'positivo':
+        return 'success';
+      case 'negativo':
+        return 'danger'; 
+      case 'neutral':
+        return 'warning';
+      default:
+        return 'info';
     }
   };
-
   const tweetsFiltrados = tweets.filter(tweet =>
     (tweet.Tweet && tweet.Tweet.toLowerCase().includes(busqueda.toLowerCase())) ||
     (tweet.Hashtag && tweet.Hashtag.toLowerCase().includes(busqueda.toLowerCase()))
@@ -141,7 +148,7 @@ function App() {
                     <span className="me-3">
                       <Badge bg="success">Positivo: {stats.Positivo}%</Badge>
                     </span>
-                  )}
+                  )}      
                   {stats.Neutral && (
                     <span className="me-3">
                       <Badge bg="warning">Neutral: {stats.Neutral}%</Badge>

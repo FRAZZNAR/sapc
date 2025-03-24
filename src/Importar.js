@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Container, Button, Alert } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import NavBar from './NavBar';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
 import HeaderComponent from './HeaderComponent.js';
+import Swal from 'sweetalert2';
 
 const Importar = () => {
   const [user, setUser] = useState('correo@ejemplo.com');
@@ -42,16 +43,33 @@ const Importar = () => {
       const result = await response.json();
 
       if (response.ok) {
+        const importedCount = result.importedCount || 'sin registros importados';
         setUploadStatus({
           show: true,
-          message: `Archivo subido correctamente: ${result.importedCount} registros importados`,
+          message: `Subido correctamente`,
           type: 'success',
         });
+
+        // Mostrar alerta con SweetAlert2
+        Swal.fire({
+          icon: 'success',
+          title: 'Subido correctamente',
+          confirmButtonText: 'Aceptar',
+        });
       } else {
+        const errorMessage = result.message || 'Error desconocido';
         setUploadStatus({
           show: true,
-          message: `Error: ${result.message}`,
+          message: `Error: ${errorMessage}`,
           type: 'danger',
+        });
+
+        // Mostrar alerta de error con SweetAlert2
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al subir el archivo',
+          text: errorMessage,
+          confirmButtonText: 'Aceptar',
         });
       }
     } catch (error) {
@@ -60,13 +78,18 @@ const Importar = () => {
         message: `Error al subir el archivo: ${error.message}`,
         type: 'danger',
       });
+
+      // Mostrar alerta de error con SweetAlert2
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al subir el archivo',
+        text: error.message,
+        confirmButtonText: 'Aceptar',
+      });
     } finally {
       setUploading(false);
     }
   };
-
-
-  
 
   const handleLogout = () => {
     setUser(null);
@@ -124,7 +147,7 @@ const Importar = () => {
                 <p style={{ fontSize: '18px', color: '#555' }}>
                   Arrastra y suelta un archivo (.csv, .json, .xml) aquí, o haz clic para seleccionarlo
                 </p>
-                <div style={{ fontSize: '30px', color: '#007bff', fontWeight: 'bold' }}>
+                <div style={{ fontSize: '30px', color: '#007bff', fontWeight: 'bold' }} >
                   ¡Hazlo fácil, carga un archivo!
                   <i className="fa-solid fa-upload" style={{ fontSize: '40px', marginLeft: '15px' }}></i>
                 </div>

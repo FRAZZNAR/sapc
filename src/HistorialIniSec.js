@@ -21,22 +21,25 @@ const HistorialIniSec = ({ userType = 1 }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-  
+
       if (!token) {
         throw new Error('No se encontró el token en el localStorage');
       }
-  
-      const response = await axios.get(
-        'https://api-users-41642489028.us-central1.run.app/historial',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+
+      // const API_URL = 'http://localhost:3000'; // Puedes cambiar esto por una variable de entorno
+      const API_URL = "https://gateway-41642489028.us-central1.run.app";
+
+      console.log('Intentando conectar a:', `${API_URL}/usuarios/historial`);
+      console.log('Token usado:', token.substring(0, 10) + '...');
+      
+      const response = await axios.get(`${API_URL}/usuarios/historial`, {
+        headers: {
+          'Authorization': `Bearer ${token}` 
         }
-      );
-  
-      console.log('Respuesta del servidor:', response.data);
-  
+      });
+
+      console.log('Respuesta del servidor:', response);
+      
       const historialFormateado = response.data.historial.map(item => {
         if (!item.fechaStr || !item.horaStr) {
           const fecha = new Date(item.fecha);
@@ -52,10 +55,18 @@ const HistorialIniSec = ({ userType = 1 }) => {
       setHistorial(historialFormateado);
       setLoading(false);
     } catch (error) {
-      console.error('Error al cargar el historial:', error);
+      console.error('Error completo:', error);
+      // Si hay una respuesta del servidor, muestra los detalles
+      if (error.response) {
+        console.error('Respuesta del servidor:', error.response.data);
+        console.error('Estado:', error.response.status);
+      } else if (error.request) {
+        // La petición fue hecha pero no se recibió respuesta
+        console.error('No se recibió respuesta del servidor');
+      }
       setError('Error al cargar el historial. ' + (error.response?.data?.mensaje || error.message));
       setLoading(false);
-  
+      
       // Si el token es inválido o ha expirado, redirige al inicio de sesión
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
@@ -63,6 +74,7 @@ const HistorialIniSec = ({ userType = 1 }) => {
       }
     }
   };
+  
   useEffect(() => {
     fetchHistorial();
   }, []);

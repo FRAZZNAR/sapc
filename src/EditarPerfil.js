@@ -14,111 +14,143 @@ const EditarPerfil = () => {
     nombre: '',
     correo: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    type: 'usuario' // Valor por defecto
   });
 
-  // Cambia esta URL según tu entorno de desarrollo
-  // const API_URL = "http://localhost:5000";
+  // URL del API - Usa solo una
+  // const API_URL = "http://localhost:3000";
   const API_URL = "https://gateway-41642489028.us-central1.run.app";
 
   useEffect(() => {
-    const usuarioData = localStorage.getItem('usuario');
-    console.log('Datos almacenados del usuario:', usuarioData);
-
-    let usuario = null;
-    try {
-      usuario = JSON.parse(usuarioData);
-    } catch (e) {
-      console.error('Error al parsear usuario:', e);
-    }
-
-    if (!usuario || !usuario._id) {
-      console.error('ID de usuario no disponible');
-    } else {
-      console.log('ID del usuario:', usuario._id);
-    }
-    fetchUserData();
+    // Cargar datos del usuario desde localStorage primero
+    loadUserDataFromLocalStorage();
   }, []);
 
-  const fetchUserData = async () => {
+  const loadUserDataFromLocalStorage = () => {
     try {
-      const token = localStorage.getItem('token');
-      let usuarioData = localStorage.getItem('usuario');
-      let usuario = null;
-
-      try {
-        usuario = JSON.parse(usuarioData);
-      } catch (e) {
-        console.error('Error al analizar datos del usuario:', e);
+      const usuarioData = localStorage.getItem('usuario');
+      
+      if (!usuarioData) {
+        throw new Error('No se encontraron datos del usuario');
       }
 
-      // Verificar si el usuario tiene un ID válido
+      const usuario = JSON.parse(usuarioData);
+      
+      if (!usuario) {
+        throw new Error('Datos de usuario no válidos');
+      }
+
+      // Cargar los datos directamente desde localStorage
+      setFormData({
+        nombre: usuario.nombre || '',
+        correo: usuario.correo || '',
+        password: '',
+        confirmPassword: '',
+        type: usuario.type || 'usuario' // Asegurarse de guardar el tipo
+      });
+
+      // Intentar actualizar los datos desde el servidor
+      fetchUserData(false);
+      
+    } catch (error) {
+      console.error('Error al cargar datos del usuario desde localStorage:', error);
+      handleAuthError(error);
+    }
+  };
+
+  const fetchUserData = async (showLoading = true) => {
+    try {
+      const token = localStorage.getItem('token');
+      const usuarioData = localStorage.getItem('usuario');
+      
       if (!token) {
         throw new Error('No hay token de autenticación');
       }
 
-      if (!usuario) {
+      if (!usuarioData) {
         throw new Error('No se encontraron datos del usuario');
       }
 
-      // Obtener el ID del usuario
-      const userId = usuario._id || usuario.id;
+      const usuario = JSON.parse(usuarioData);
+      
+      // Verificar si el usuario tiene un ID válido
+      const userId = usuario.id || usuario._id;
 
       if (!userId) {
         throw new Error('No se puede identificar el ID del usuario');
       }
 
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/usuarios/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const userData = response.data;
-      setFormData({
-        nombre: userData.nombre || '',
-        correo: userData.correo || '',
-        password: '',
-        confirmPassword: ''
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error('Error al cargar datos del usuario:', error);
-      setLoading(false);
-
-      // Mostrar mensaje de error específico
-      let errorMessage = 'Error al cargar los datos del perfil. Intente nuevamente más tarde.';
-
-      if (error.message === 'No hay token de autenticación' ||
-        error.message === 'No se encontraron datos del usuario' ||
-        error.message === 'No se puede identificar el ID del usuario') {
-        errorMessage = 'No se puede identificar su usuario. Por favor, inicie sesión nuevamente.';
-      } else if (error.response?.status === 404) {
-        errorMessage = 'No se encontró la información del usuario. Por favor, inicie sesión nuevamente.';
-      } else if (error.response?.status === 401) {
-        errorMessage = 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.';
+      if (showLoading) {
+        setLoading(true);
       }
 
-      Swal.fire({
-        title: 'Error',
-        text: errorMessage,
-        icon: 'error',
-        confirmButtonText: 'Aceptar'
-      }).then(() => {
-        // Redirigir a login si hay problemas de autenticación
-        if (error.message === 'No hay token de autenticación' ||
+      // Solo intentar con la URL correcta
+      try {
+        const response = await axios.get(`${API_URL}/usuarios/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const userData = response.data;
+        setFormData(prevData => ({
+          ...prevData,
+          nombre: userData.nombre || prevData.nombre,
+          correo: userData.correo || prevData.correo,
+          type: userData.type || prevData.type,
+          password: '',
+          confirmPassword: ''
+        }));
+      } catch (error) {
+        console.error('Error al cargar datos del usuario:', error);
+        // Seguimos con los datos del localStorage que ya se cargaron
+      }
+      
+      if (showLoading) {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error al cargar datos del usuario:', error);
+      if (showLoading) {
+        setLoading(false);
+        handleAuthError(error);
+      }
+    }
+  };
+
+  const handleAuthError = (error) => {
+    // Mostrar mensaje de error específico
+    let errorMessage = 'Error al cargar los datos del perfil. Intente nuevamente más tarde.';
+
+    if (error.message === 'No hay token de autenticación' ||
+        error.message === 'No se encontraron datos del usuario' ||
+        error.message === 'No se puede identificar el ID del usuario') {
+      errorMessage = 'No se puede identificar su usuario. Por favor, inicie sesión nuevamente.';
+    } else if (error.response?.status === 404) {
+      errorMessage = 'No se encontró la información del usuario. Por favor, inicie sesión nuevamente.';
+    } else if (error.response?.status === 401) {
+      errorMessage = 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.';
+    }
+
+    Swal.fire({
+      title: 'Error',
+      text: errorMessage,
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    }).then(() => {
+      // Redirigir a login si hay problemas de autenticación
+      if (error.message === 'No hay token de autenticación' ||
           error.message === 'No se encontraron datos del usuario' ||
           error.message === 'No se puede identificar el ID del usuario' ||
           error.response?.status === 401 ||
           error.response?.status === 404) {
-          // Limpiar localStorage antes de redirigir
-          localStorage.removeItem('token');
-          localStorage.removeItem('usuario');
-          navigate('/login');
-        }
-      });
-    }
+        // Limpiar localStorage antes de redirigir
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        navigate('/login');
+      }
+    });
   };
 
   const handleChange = (e) => {
@@ -157,26 +189,29 @@ const EditarPerfil = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      let usuarioData = localStorage.getItem('usuario');
-      let usuario = null;
-
-      try {
-        usuario = JSON.parse(usuarioData);
-      } catch (e) {
-        console.error('Error al analizar datos del usuario:', e);
-        throw new Error('Datos de usuario no válidos');
+      const usuarioData = localStorage.getItem('usuario');
+      
+      if (!token) {
+        throw new Error('No hay token de autenticación');
       }
 
-      // Obtener el ID del usuario
-      const userId = usuario._id || usuario.id;
+      if (!usuarioData) {
+        throw new Error('No se encontraron datos del usuario');
+      }
+      
+      const usuario = JSON.parse(usuarioData);
+      
+      // Verificar si el usuario tiene un ID válido
+      const userId = usuario.id || usuario._id;
 
       if (!userId) {
         throw new Error('ID de usuario no disponible');
       }
 
-      // Crear objeto con los datos a enviar (omitir confirmPassword)
+      // Crear objeto con los datos REQUERIDOS por el backend
       const userData = {
-        nombre: formData.nombre
+        nombre: formData.nombre,
+        type: formData.type || usuario.type || 'usuario' // Asegurarse de incluir el tipo
       };
 
       // Solo incluir password si se ha ingresado una nueva
@@ -184,6 +219,7 @@ const EditarPerfil = () => {
         userData.password = formData.password;
       }
 
+      // Solo intentar con la URL correcta
       await axios.put(`${API_URL}/usuarios/${userId}`, userData, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -191,7 +227,11 @@ const EditarPerfil = () => {
       });
 
       // Actualizar información en localStorage
-      const updatedUser = { ...usuario, nombre: formData.nombre };
+      const updatedUser = { 
+        ...usuario, 
+        nombre: formData.nombre,
+        type: userData.type
+      };
       localStorage.setItem('usuario', JSON.stringify(updatedUser));
 
       // Actualizar también el nombre en localStorage si existe
@@ -224,6 +264,8 @@ const EditarPerfil = () => {
         errorMessage = 'Su sesión no es válida. Por favor, inicie sesión nuevamente';
       } else if (error.response?.status === 401) {
         errorMessage = 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.';
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.mensaje || 'Datos incorrectos. Verifique la información enviada.';
       }
 
       Swal.fire({
@@ -233,8 +275,8 @@ const EditarPerfil = () => {
         confirmButtonText: 'Aceptar'
       }).then(() => {
         if (error.response?.status === 401 ||
-          error.message === 'ID de usuario no disponible' ||
-          error.message === 'Datos de usuario no válidos') {
+            error.message === 'ID de usuario no disponible' ||
+            error.message === 'Datos de usuario no válidos') {
           // Limpiar localStorage antes de redirigir
           localStorage.removeItem('token');
           localStorage.removeItem('usuario');
