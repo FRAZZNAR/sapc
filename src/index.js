@@ -20,14 +20,21 @@ import {GoogleOAuthProvider} from '@react-oauth/google'
 
 const CLIENT_ID = "41642489028-cdvs8dcjnj4fc7rug2ga4sup1o1s1pum.apps.googleusercontent.com"
 
-
-const AdminRoute = ({ children }) => {
+// Componente de ruta protegida
+const ProtectedRoute = ({ children, adminOnly = false }) => {
+  const token = localStorage.getItem('token');
   const userType = localStorage.getItem('type');
-  console.log("Current user type:", userType);
-  return (userType && userType === 'admin') ? children : <Navigate to="/Inicio" />;
-};
 
-const UserRoute = ({ children }) => {
+  // Si no hay token, redirige al inicio de sesión
+  if (!token) {
+    return <Navigate to="/Inicio" replace />;
+  }
+
+  // Si es ruta de admin y no es admin, redirige
+  if (adminOnly && userType !== 'admin') {
+    return <Navigate to="/Inicio" replace />;
+  }
+
   return children;
 };
 
@@ -37,22 +44,29 @@ root.render(
     <GoogleOAuthProvider clientId={CLIENT_ID}>
     <Router>
       <Routes>
-        <Route path="/" element={<App />} />
+        {/* Rutas públicas */}
         <Route path="/Inicio" element={<Inicio />} />
         <Route path="/Registro" element={<Registro />} />
         
-        <Route path="/Panel" element={<AdminRoute><Panel /></AdminRoute>} />
-        <Route path="/GestionUsuarios" element={<AdminRoute><GestionUsuarios /></AdminRoute>} />
-        <Route path="/HistorialIniSec" element={<AdminRoute><HistorialIniSec /></AdminRoute>} />
-        <Route path="/Popularidad" element={<AdminRoute><Popularidad /></AdminRoute>} />
-        <Route path="/Importar" element={<AdminRoute><Importar /></AdminRoute>} />
+        {/* Rutas protegidas con validación de token */}
+        <Route path="/" element={<ProtectedRoute><App /></ProtectedRoute>} />
         
-        <Route path="/HistorialBusqueda" element={<UserRoute><HistorialBusqueda /></UserRoute>} />
-        <Route path="/EditarPerfil" element={<UserRoute><EditarPerfil /></UserRoute>} />
-        <Route path="/Resultados" element={<UserRoute><Resultados /></UserRoute>} />
+        {/* Rutas de admin */}
+        <Route path="/Panel" element={<ProtectedRoute adminOnly={true}><Panel /></ProtectedRoute>} />
+        <Route path="/GestionUsuarios" element={<ProtectedRoute adminOnly={true}><GestionUsuarios /></ProtectedRoute>} />
+        <Route path="/HistorialIniSec" element={<ProtectedRoute adminOnly={true}><HistorialIniSec /></ProtectedRoute>} />
+        <Route path="/Popularidad" element={<ProtectedRoute adminOnly={true}><Popularidad /></ProtectedRoute>} />
+        <Route path="/Importar" element={<ProtectedRoute adminOnly={true}><Importar /></ProtectedRoute>} />
         
+        {/* Rutas de usuario */}
+        <Route path="/HistorialBusqueda" element={<ProtectedRoute><HistorialBusqueda /></ProtectedRoute>} />
+        <Route path="/EditarPerfil" element={<ProtectedRoute><EditarPerfil /></ProtectedRoute>} />
+        <Route path="/Resultados" element={<ProtectedRoute><Resultados /></ProtectedRoute>} />
+        
+        {/* Otras rutas */}
         <Route path="/Header" element={<Header />} />
         
+        {/* Ruta 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

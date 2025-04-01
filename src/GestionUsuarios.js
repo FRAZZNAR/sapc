@@ -11,7 +11,7 @@ import Swal from 'sweetalert2'; // Importamos SweetAlert2
 const GestionUsuarios = () => {
   const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
-  
+
   // Modal states
   const [showEditModal, setShowEditModal] = useState(false);
   const [showToggleModal, setShowToggleModal] = useState(false);
@@ -20,23 +20,25 @@ const GestionUsuarios = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     correo: '',
-    type: 'user'
+    type: 'usuario'
   });
 
   const API_URL = "https://gateway-41642489028.us-central1.run.app";
   // const API_URL = 'http://localhost:3000';
+  
+
 
   const fetchUsuarios = async () => {
     try {
-      const token = localStorage.getItem('token'); 
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/usuarios`, {
         headers: {
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         }
       });
 
       console.log("Respuesta de la API:", response.data);
-      
+
       // Manejo de ambos formatos de respuesta
       if (Array.isArray(response.data)) {
         setUsuarios(response.data);
@@ -51,7 +53,7 @@ const GestionUsuarios = () => {
       if (error.response && error.response.status === 401) {
         Swal.fire({
           title: 'Sesión expirada',
-          text: 'No se proporcionó token de autenticación. Por favor, inicie sesión nuevamente.',
+          text: 'Por favor, inicie sesión nuevamente.',
           icon: 'warning',
           confirmButtonText: 'Ir a login'
         }).then(() => {
@@ -67,7 +69,7 @@ const GestionUsuarios = () => {
       }
     }
   };
-  
+
   useEffect(() => {
     fetchUsuarios();
   }, []);
@@ -91,7 +93,7 @@ const GestionUsuarios = () => {
     setFormData({
       nombre: user.nombre,
       correo: user.correo,
-      type: user.type || 'user'
+      type: user.type || 'usuario'
     });
     setShowEditModal(true);
   };
@@ -124,7 +126,7 @@ const GestionUsuarios = () => {
         }
       });
       setShowEditModal(false);
-      fetchUsuarios(); 
+      fetchUsuarios();
       Swal.fire({
         title: 'Usuario actualizado',
         text: 'La información del usuario se actualizó correctamente',
@@ -155,7 +157,7 @@ const GestionUsuarios = () => {
         }
       });
       setShowToggleModal(false);
-      fetchUsuarios(); 
+      fetchUsuarios();
       Swal.fire({
         title: 'Estado actualizado',
         text: `El usuario ha sido ${newStatus ? 'activado' : 'desactivado'} exitosamente`,
@@ -174,34 +176,38 @@ const GestionUsuarios = () => {
     }
   };
 
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = async (userId, userName) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/usuarios/${selectedUser._id}`, {
+      console.log(`Intentando eliminar usuario con ID: ${userId}`);
+  
+      // Realizar la eliminación
+      await axios.get(`${API_URL}/usuarios/delete?id=${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      setShowDeleteModal(false);
-      fetchUsuarios();
+      
+      // Actualizar el estado local inmediatamente
+      setUsuarios(prevUsuarios => prevUsuarios.filter(user => user._id !== userId));
+      
+      // También actualizar desde la API y ESPERAR a que termine
+      await fetchUsuarios();
+      
+      // Ahora mostrar el mensaje de éxito
       Swal.fire({
         title: 'Usuario eliminado',
-        text: 'El usuario ha sido eliminado permanentemente',
+        text: `El usuario ${userName} ha sido eliminado permanentemente`,
         icon: 'success',
         timer: 2000,
         showConfirmButton: false
       });
     } catch (error) {
-      console.error('Error al eliminar usuario:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'No se pudo eliminar el usuario',
-        icon: 'error',
-        confirmButtonText: 'Aceptar'
-      });
+      console.log("error", error);
+      // También esperamos aquí
+      await fetchUsuarios();
     }
   };
-
   // Confirmación de eliminación con SweetAlert
   const confirmDeleteWithSweetAlert = (user) => {
     Swal.fire({
@@ -216,8 +222,7 @@ const GestionUsuarios = () => {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        setSelectedUser(user);
-        handleDeleteUser();
+        handleDeleteUser(user._id, user.nombre);
       }
     });
   };
@@ -230,7 +235,7 @@ const GestionUsuarios = () => {
           <HeaderComponent />
         </header>
         <h2 className="text-center">Gestión de Usuarios</h2>
-        
+
         <Container className="mt-4">
           <Table bordered hover className="table-striped mt-3">
             <thead>
@@ -255,21 +260,21 @@ const GestionUsuarios = () => {
                       </span>
                     </td>
                     <td>
-                      <Button 
-                        variant="primary" 
+                      <Button
+                        variant="primary"
                         className="me-2"
                         onClick={() => openEditModal(usuario)}
                       >
                         <i className="fa-solid fa-pen"></i>
                       </Button>
-                      <Button 
-                        variant="warning" 
+                      <Button
+                        variant="warning"
                         className="me-2"
                         onClick={() => openToggleModal(usuario)}
                       >
                         <i className={`fa-solid ${usuario.active ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
                       </Button>
-                      <Button 
+                      <Button
                         variant="danger"
                         onClick={() => confirmDeleteWithSweetAlert(usuario)}
                       >
@@ -297,19 +302,19 @@ const GestionUsuarios = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Nombre</Form.Label>
-              <Form.Control 
-                type="text" 
+              <Form.Control
+                type="text"
                 name="nombre"
-                value={formData.nombre} 
+                value={formData.nombre}
                 onChange={handleInputChange}
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Correo Electrónico</Form.Label>
-              <Form.Control 
-                type="email" 
+              <Form.Control
+                type="email"
                 name="correo"
-                value={formData.correo} 
+                value={formData.correo}
                 onChange={handleInputChange}
                 disabled
               />
@@ -319,12 +324,12 @@ const GestionUsuarios = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Tipo de Usuario</Form.Label>
-              <Form.Select 
+              <Form.Select
                 name="type"
-                value={formData.type} 
+                value={formData.type}
                 onChange={handleInputChange}
               >
-                <option value="user">Usuario</option>
+                <option value="usuario">Usuario</option>
                 <option value="admin">Administrador</option>
               </Form.Select>
             </Form.Group>
@@ -350,8 +355,8 @@ const GestionUsuarios = () => {
             <p>
               ¿Está seguro que desea {selectedUser.active ? "desactivar" : "activar"} al usuario <strong>{selectedUser.nombre}</strong>?
               <br />
-              {selectedUser.active 
-                ? "El usuario no podrá acceder a la plataforma." 
+              {selectedUser.active
+                ? "El usuario no podrá acceder a la plataforma."
                 : "El usuario podrá volver a acceder a la plataforma."}
             </p>
           )}
@@ -360,8 +365,8 @@ const GestionUsuarios = () => {
           <Button variant="secondary" onClick={() => setShowToggleModal(false)}>
             Cancelar
           </Button>
-          <Button 
-            variant={selectedUser?.active ? "danger" : "success"} 
+          <Button
+            variant={selectedUser?.active ? "danger" : "success"}
             onClick={handleToggleUserStatus}
           >
             {selectedUser?.active ? "Desactivar" : "Activar"} Usuario
@@ -369,7 +374,7 @@ const GestionUsuarios = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal para eliminar usuarios (se mantiene pero ya no se usa directamente) */}
+      {/* Ya no se usa el modal de eliminar, pero se mantiene por si se quiere volver a implementar */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Eliminar Usuario</Modal.Title>
@@ -387,7 +392,7 @@ const GestionUsuarios = () => {
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancelar
           </Button>
-          <Button variant="danger" onClick={handleDeleteUser}>
+          <Button variant="danger" onClick={() => handleDeleteUser(selectedUser?._id, selectedUser?.nombre)}>
             Eliminar Permanentemente
           </Button>
         </Modal.Footer>

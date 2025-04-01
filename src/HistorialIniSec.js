@@ -26,55 +26,41 @@ const HistorialIniSec = ({ userType = 1 }) => {
         throw new Error('No se encontró el token en el localStorage');
       }
 
-      // const API_URL = 'http://localhost:3000'; // Puedes cambiar esto por una variable de entorno
       const API_URL = "https://gateway-41642489028.us-central1.run.app";
 
       console.log('Intentando conectar a:', `${API_URL}/usuarios/historial`);
-      console.log('Token usado:', token.substring(0, 10) + '...');
       
       const response = await axios.get(`${API_URL}/usuarios/historial`, {
-        headers: {
-          'Authorization': `Bearer ${token}` 
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       console.log('Respuesta del servidor:', response);
       
       const historialFormateado = response.data.historial.map(item => {
-        if (!item.fechaStr || !item.horaStr) {
-          const fecha = new Date(item.fecha);
-          return {
-            ...item,
-            fechaStr: item.fechaStr || fecha.toLocaleDateString(),
-            horaStr: item.horaStr || fecha.toLocaleTimeString(),
-          };
-        }
-        return item;
+        const fecha = new Date(item.fecha);
+        return {
+          ...item,
+          fechaStr: item.fechaStr || fecha.toLocaleDateString(),
+          horaStr: item.horaStr || fecha.toLocaleTimeString(),
+          nombre: item.nombre || "Desconocido",
+          estado: item.estado || "Desconocido"
+        };
       });
-  
+
       setHistorial(historialFormateado);
       setLoading(false);
     } catch (error) {
-      console.error('Error completo:', error);
-      // Si hay una respuesta del servidor, muestra los detalles
-      if (error.response) {
-        console.error('Respuesta del servidor:', error.response.data);
-        console.error('Estado:', error.response.status);
-      } else if (error.request) {
-        // La petición fue hecha pero no se recibió respuesta
-        console.error('No se recibió respuesta del servidor');
-      }
+      console.error('Error:', error);
       setError('Error al cargar el historial. ' + (error.response?.data?.mensaje || error.message));
       setLoading(false);
       
-      // Si el token es inválido o ha expirado, redirige al inicio de sesión
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/');
       }
     }
   };
-  
+
   useEffect(() => {
     fetchHistorial();
   }, []);
@@ -85,8 +71,12 @@ const HistorialIniSec = ({ userType = 1 }) => {
   };
 
   const handleDownloadReport = () => {
-    const doc = new jsPDF();
+    if (historial.length === 0) {
+      alert('No hay datos disponibles para descargar.');
+      return;
+    }
 
+    const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text('Historial de Inicio de Sesión', 20, 20);
 
@@ -98,10 +88,15 @@ const HistorialIniSec = ({ userType = 1 }) => {
 
     let y = 40;
     historial.forEach((item) => {
-      doc.text(item.fechaStr, 20, y);
-      doc.text(item.horaStr, 50, y);
-      doc.text(item.nombre, 90, y);
-      doc.text(item.estado === 'exitoso' ? 'Exitoso' : 'Fallido', 150, y);
+      const fecha = item.fechaStr || "Sin fecha";
+      const hora = item.horaStr || "Sin hora";
+      const usuario = item.nombre || "Desconocido";
+      const estado = item.estado === "exitoso" ? "Exitoso" : "Fallido";
+
+      doc.text(fecha, 20, y);
+      doc.text(hora, 50, y);
+      doc.text(usuario, 90, y);
+      doc.text(estado, 150, y);
       y += 10;
     });
 
@@ -149,8 +144,7 @@ const HistorialIniSec = ({ userType = 1 }) => {
       {userType === 1 && (
         <div className="main-content">
           <header className="header">
-          <HeaderComponent />
-
+            <HeaderComponent />
           </header>
         </div>
       )}

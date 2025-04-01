@@ -7,18 +7,22 @@ import Swal from "sweetalert2";
 import "./Inise.css";
 import regImg from "./Img/Reg1.jpg";
 
-const API_URL = "https://gateway-41642489028.us-central1.run.app";
+// Configuración de URL (puedes cambiar según tu entorno)
 // const API_URL = "http://localhost:3000";
+const API_URL = "https://gateway-41642489028.us-central1.run.app";
+
 
 const Inicio = () => {
   const navigate = useNavigate();
 
+  // Estado para manejar los datos del formulario
   const [formData, setFormData] = useState({
     correo: "",
     contraseña: "",
     codigoVerificacion: ""
   });
 
+  // Estados de control
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [esperandoCodigo, setEsperandoCodigo] = useState(false);
@@ -26,7 +30,8 @@ const Inicio = () => {
   const [tempUsuario, setTempUsuario] = useState(null);
   const [tiempoRestante, setTiempoRestante] = useState(0);
   const [timerInterval, setTimerInterval] = useState(null);
-  
+
+  // Maneja cambios en los inputs
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError("");
@@ -67,11 +72,27 @@ const Inicio = () => {
     });
   };
 
+  // Función para mostrar alerta de sesión activa
+  const showSessionActiveAlert = () => {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Sesión Activa',
+      text: 'No puedes iniciar sesión porque ya tienes una sesión abierta en otro dispositivo.',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#C4E2E2',
+      customClass: {
+        popup: 'swal-custom-popup',
+        title: 'swal-custom-title',
+        confirmButton: 'swal-custom-button'
+      }
+    });
+  };
+
   // Función para iniciar el temporizador de reenvío
   const iniciarTemporizador = () => {
     clearInterval(timerInterval);
     setTiempoRestante(120); // 2 minutos
-    
+
     const intervalo = setInterval(() => {
       setTiempoRestante(prevTime => {
         if (prevTime <= 1) {
@@ -81,15 +102,22 @@ const Inicio = () => {
         return prevTime - 1;
       });
     }, 1000);
-    
+
     setTimerInterval(intervalo);
   };
 
+  // Función para formatear tiempo
+  const formatoTiempo = (segundos) => {
+    const minutos = Math.floor(segundos / 60);
+    const segs = segundos % 60;
+    return `${minutos}:${segs < 10 ? '0' + segs : segs}`;
+  };
+
+  // Manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { correo, contraseña, codigoVerificacion } = formData;
 
-    // Si estamos esperando un código de verificación
     if (esperandoCodigo) {
       if (!codigoVerificacion) {
         setError("El código de verificación es obligatorio.");
@@ -137,6 +165,22 @@ const Inicio = () => {
       return;
     }
 
+    // Verificar sesión activa antes de intentar iniciar sesión
+    try {
+      const sessionResponse = await axios.post(`${API_URL}/usuarios/check-session`, { correo });
+      if (sessionResponse.data.sessionAbierta === 1) {
+        showSessionActiveAlert();
+        return;
+      }
+    } catch (error) {
+      // Si el usuario no existe, permite continuar con el intento de inicio de sesión
+      if (error.response?.status !== 404) {
+        const errorMsg = error.response?.data?.mensaje || "Error al verificar el estado de la sesión.";
+        showErrorAlert(errorMsg);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const response = await axios.post(`${API_URL}/usuarios/login-codigo`, {
@@ -165,9 +209,10 @@ const Inicio = () => {
     }
   };
 
+  // Reenviar código de verificación
   const reenviarCodigo = async () => {
     if (tiempoRestante > 0) return;
-    
+
     setLoading(true);
     try {
       const response = await axios.post(`${API_URL}/usuarios/reenviar-codigo`, {
@@ -193,6 +238,7 @@ const Inicio = () => {
     }
   };
 
+  // Cancelar verificación
   const cancelarVerificacion = () => {
     setEsperandoCodigo(false);
     setTempToken("");
@@ -205,6 +251,7 @@ const Inicio = () => {
     setTiempoRestante(0);
   };
 
+  // Manejar login con Google
   const handleGoogleLogin = async (response) => {
     if (!response?.credential) {
       setError("No se pudo obtener credenciales de Google.");
@@ -212,10 +259,32 @@ const Inicio = () => {
       return;
     }
 
+    // Extraer correo del token de Google
+    const googleToken = response.credential;
+    const googleResponse = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${googleToken}`
+    );
+    const googleUserInfo = await googleResponse.json();
+    const correo = googleUserInfo.email;
+
+    // Verificar sesión activa
+    try {
+      const sessionResponse = await axios.post(`${API_URL}/usuarios/check-session`, { correo });
+      if (sessionResponse.data.sessionAbierta === 1) {
+        showSessionActiveAlert();
+        return;
+      }
+    } catch (error) {
+      // Si el usuario no existe, permite continuar con el registro/login con Google
+      if (error.response?.status !== 404) {
+        const errorMsg = error.response?.data?.mensaje || "Error al verificar el estado de la sesión.";
+        showErrorAlert(errorMsg);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      const googleToken = response.credential;
-
       const res = await axios.post(`${API_URL}/usuarios/google-login-codigo`, {
         token: googleToken,
       });
@@ -245,12 +314,7 @@ const Inicio = () => {
     }
   };
 
-  const formatoTiempo = (segundos) => {
-    const minutos = Math.floor(segundos / 60);
-    const segs = segundos % 60;
-    return `${minutos}:${segs < 10 ? '0' + segs : segs}`;
-  };
-
+  // Renderizado del componente
   return (
     <motion.div
       className="container-fluid vh-100 d-flex justify-content-center align-items-center"
@@ -389,8 +453,8 @@ const Inicio = () => {
                       onClick={reenviarCodigo}
                       disabled={loading || tiempoRestante > 0}
                     >
-                      {tiempoRestante > 0 
-                        ? `Reenviar (${formatoTiempo(tiempoRestante)})` 
+                      {tiempoRestante > 0
+                        ? `Reenviar (${formatoTiempo(tiempoRestante)})`
                         : "Reenviar código"}
                     </button>
                   </div>
