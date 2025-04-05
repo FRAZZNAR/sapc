@@ -139,7 +139,7 @@ const Popularidad = () => {
     }
   };
 
-  // Función para obtener el color de la insignia de sentimiento
+  // Función para obtener el color de la insignia de sentimiento // ASD&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   const getSentimentColor = (sentiment) => {
     switch(sentiment) {
       case 'Positivo': return 'success';
